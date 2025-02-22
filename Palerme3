@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lieux emblématiques de Palerme</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+        }
+        #map { 
+            height: 100vh; 
+            width: 100%; 
+        }
+        .title {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .leaflet-popup-content {
+            margin: 10px;
+        }
+        .marker-label {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #3388ff;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .marker-pin {
+            width: 8px;
+            height: 8px;
+            background-color: #3388ff;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Lieux emblématiques de Palerme</h1>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Création de la carte
+        const map = L.map('map').setView([38.1157, 13.3615], 15);
+
+        // Ajout de plusieurs fournisseurs de tuiles pour la redondance
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fournisseur de tuiles alternatif si OSM ne fonctionne pas
+        const cartoDB = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '©OpenStreetMap, ©CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        });
+
+        // Vérification et basculement des tuiles si nécessaire
+        osmLayer.on('tileerror', function() {
+            map.removeLayer(osmLayer);
+            cartoDB.addTo(map);
+        });
+
+        // Points d'intérêt
+        const points = [
+            {
+                coords: [38.1166, 13.3597],
+                name: "Quattro Canti",
+                description: "Place octogonale du XVIIe siècle, symbole du baroque sicilien",
+                horaires: "Accès libre 24h/24",
+                tarif: "Gratuit"
+            },
+            {
+                coords: [38.1157, 13.3615],
+                name: "Fontaine Pretoria",
+                description: "Chef-d'œuvre maniériste du XVIe siècle avec divinités mythologiques",
+                horaires: "Accès libre",
+                tarif: "Gratuit"
+            },
+            {
+                coords: [38.1155, 13.3621],
+                name: "Église Santa Maria",
+                description: "Église byzantine-normande avec mosaïques dorées",
+                horaires: "9h30-18h30 (lun-sam), 9h-13h (dim)",
+                tarif: "2€"
+            },
+            {
+                coords: [38.1111, 13.3525],
+                name: "Palais des Normands",
+                description: "Ancien palais royal avec la Chapelle Palatine",
+                horaires: "8h15-17h40 (lun-sam), 8h15-13h (dim)",
+                tarif: "15€"
+            },
+            {
+                coords: [38.1150, 13.3558],
+                name: "Cathédrale",
+                description: "Cathédrale mêlant styles gothique, baroque et néoclassique",
+                horaires: "7h-19h (lun-sam), 8h-13h et 16h-19h (dim)",
+                tarif: "7-12€"
+            },
+            {
+                coords: [38.1106, 13.3644],
+                name: "Marché Ballarò",
+                description: "Marché historique avec street-food et épices",
+                horaires: "7h-20h (lun-sam)",
+                tarif: "Gratuit"
+            },
+            {
+                coords: [38.1203, 13.3572],
+                name: "Teatro Massimo",
+                description: "Plus grand opéra d'Italie, style néoclassique",
+                horaires: "Visites guidées 10h-17h",
+                tarif: "10€"
+            },
+            {
+                coords: [38.1089, 13.3506],
+                name: "Catacombes",
+                description: "Catacombes abritant 8000 momies",
+                horaires: "9h-12h30 et 15h-17h30",
+                tarif: "3€"
+            },
+            {
+                coords: [38.1172, 13.3603],
+                name: "Palazzo Branciforte",
+                description: "Palais Renaissance avec collections d'art",
+                horaires: "9h30-18h30 (mar-dim)",
+                tarif: "8€"
+            }
+        ];
+
+        // Ajout des marqueurs avec étiquettes
+        points.forEach((point) => {
+            // Création du contenu du popup
+            const popupContent = `
+                <h3>${point.name}</h3>
+                <p><strong>Horaires :</strong> ${point.horaires}</p>
+                <p><strong>Tarif :</strong> ${point.tarif}</p>
+                <p>${point.description}</p>
+            `;
+
+            // Création de l'étiquette avec point
+            const icon = L.divIcon({
+                className: 'marker-label',
+                html: `<div class="marker-pin"></div>${point.name}`,
+                iconSize: [120, 40],
+                iconAnchor: [60, 20]
+            });
+
+            // Ajout du marqueur avec l'étiquette
+            L.marker(point.coords, {icon: icon})
+                .bindPopup(popupContent)
+                .addTo(map);
+        });
+
+        // Ajout des contrôles de zoom
+        map.zoomControl.setPosition('topright');
+    </script>
+</body>
+</html>
